@@ -92,14 +92,14 @@ beta=0.00225 #infectiosité
 gamma=0.01 #mortalité
 mu=0.04 #recouvrement
 N=764 #pop initiale
-I=1 #infecté initiale
+I=0.0 #infecté initiale
 lambda=0.001 #morts naturelles
 alpha=0.002 #naissances naturelles
 theta=alpha-lambda #pression démographique
 k=300 #capacité limite
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
 ini=c(S=N-I,I=I,R=0,D=0)
-time=seq(0,30000,1)
+time=seq(0,3500,1)
 
 sol=lsoda(func=Eq3,y=ini,times=time,parms = parameters) #resoud
 
@@ -107,3 +107,30 @@ plot(x=time,y=sol[,2],xlab="x",ylab="Population",type="l",ylim=c(0,700),col="gre
 points(x = time,sol[,3],col="red",type="l")
 points(x = time,sol[,4],col="blue",type="l")
 points(x = time,sol[,5],col="black",type="l")
+
+
+# TESTS
+
+
+beta=0.00225 #infectiosité
+gamma=0.1 #mortalité
+mu=0.4 #recouvrement
+N=764 #pop initiale
+I=1 #infecté initiale
+lambda=0.001 #morts naturelles
+alpha=0.002 #naissances naturelles
+theta=alpha-lambda #pression démographique
+k=300 #capacité limite
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
+ini=c(S=N-I,I=I,R=0,D=0)
+inisansmaladie=c(S=N,I=0,R=0,D=0)
+maxtime=5000
+time=seq(0,maxtime,0.1)
+
+sol=lsoda(func=Eq3,y=ini,times=time,parms = parameters) #resoud
+
+
+solm=lsoda(func=Eq3,y=inisansmaladie,times=time,parms = parameters) #resoud
+
+print(sol[maxtime,5]/(sol[maxtime,4]+sol[maxtime,3]+sol[maxtime,2]))
+print(solm[maxtime,5]/(solm[maxtime,4]+solm[maxtime,3]+solm[maxtime,2]))
