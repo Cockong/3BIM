@@ -110,20 +110,24 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
   esperance_avec_maladie = années_de_vie_avec_maladie / nbr_avec_maladie
   
   # renvoi des résultats
-  list(c(epidemie=epidemie,fin_epidemie=fin_epidemie,morts_sans_maladie=morts_sans_maladie,
-         morts_pendant_maladie=morts_pendant_maladie,morts_avec_maladie=morts_avec_maladie,
-         années_de_vie_sans_maladie=années_de_vie_sans_maladie, années_de_vie_avec_maladie=années_de_vie_avec_maladie, 
-         morts_epargnees=morts_avec_maladie-morts_pendant_maladie, annees_de_vie_perdues=années_de_vie_sans_maladie-années_de_vie_avec_maladie,
-         nbr_sans_maladie = nbr_sans_maladie, nbr_avec_maladie = nbr_avec_maladie, 
-         esperance_avec_maladie = esperance_avec_maladie , esperance_sans_maladie = esperance_sans_maladie))
+  list(c(epidemie = epidemie, 
+         fin_epidemie = fin_epidemie, 
+         morts_epargnees = morts_sans_maladie - morts_avec_maladie, 
+         temps_de_vie_gagnees = années_de_vie_avec_maladie - années_de_vie_sans_maladie,
+         individus_gagnes = nbr_avec_maladie - nbr_sans_maladie, 
+         esperance_gagnée = esperance_avec_maladie - esperance_sans_maladie,
+         esperance_avec_maladie = esperance_avec_maladie,
+         esperance_sans_maladie = esperance_sans_maladie,
+         nbr_avec_maladie = nbr_avec_maladie,
+         nbr_sans_maladie = nbr_sans_maladie ))
 }
 
 
 #Données
 
 beta=0.00225 #infectiosité
-gamma=0.04 #mortalité
-mu=0.04 #recouvrement
+gamma=0.0004 #mortalité
+mu=0.095 #recouvrement
 N=300 #pop initiale
 I=1 #infecté initiale
 lambda=0.001 #morts naturelles
@@ -133,7 +137,7 @@ k=800 #capacité limite
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
 ini=c(S=N-I,I=I,R=0,D=0)
 inisansmaladie=c(S=N,I=0,R=0,D=0)
-maxtime=5000
+maxtime=3000
 pasdetemps=1
 
 
@@ -164,7 +168,8 @@ print(testblanc)
 #Pour les mêmes raisons Nous avons beaucoup d'individus qui n'ont jamais vu le jour dans le cas d'une maladie
 
 #voici les résultats sur l'espérance de vie telle que nous l'avons simuler (on suppose que chaque individu vit aussi longtemps) :
-#espérance de vie avec maladie < espérance de vie sans maladie
+# generalement espérance de vie avec maladie < espérance de vie sans maladie 
+#V ATTENTION CE RESULTAT VARIE EN FONCTION DES TESTS notemment quand mortalité maladie<< taux de recouvrement et que maladie non endémique
 
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
 testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
