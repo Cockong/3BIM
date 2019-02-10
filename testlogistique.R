@@ -96,14 +96,26 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
   points(x = time,solm[,4],col="blue",type="l")
   points(x = time,solm[,5],col="black",type="l")
   
-  #autre résultat intéresant : la somme des "années" de vies de tous les individus
+  # résultat intéresant : le nombre d'individus ayant vécus
+  nbr_sans_maladie = sum(solm[length(sol[,5]),2:5])  
+  nbr_avec_maladie = sum(smaladie[length(smaladie)],imaladie[length(imaladie)],rmaladie[length(rmaladie)],dmaladie[length(dmaladie)])
+  
+  
+  # autre résultat intéresant : la somme des "années" de vies de tous les individus
   années_de_vie_sans_maladie=( sum(solm[,2])+sum(solm[,3])+sum(solm[,4]) ) 
   années_de_vie_avec_maladie=( sum(smaladie)+sum(imaladie)+sum(rmaladie) ) 
   
-  #renvoi des résultats
+  #simulation de l'espérance de vie : temps de vie total / nombre dindividus ayant vécu
+  esperance_sans_maladie = années_de_vie_sans_maladie / nbr_sans_maladie
+  esperance_avec_maladie = années_de_vie_avec_maladie / nbr_avec_maladie
+  
+  # renvoi des résultats
   list(c(epidemie=epidemie,fin_epidemie=fin_epidemie,morts_sans_maladie=morts_sans_maladie,
          morts_pendant_maladie=morts_pendant_maladie,morts_avec_maladie=morts_avec_maladie,
-         années_de_vie_sans_maladie=années_de_vie_sans_maladie, années_de_vie_avec_maladie=années_de_vie_avec_maladie ))
+         années_de_vie_sans_maladie=années_de_vie_sans_maladie, années_de_vie_avec_maladie=années_de_vie_avec_maladie, 
+         morts_epargnees=morts_avec_maladie-morts_pendant_maladie, annees_de_vie_perdues=années_de_vie_sans_maladie-années_de_vie_avec_maladie,
+         nbr_sans_maladie = nbr_sans_maladie, nbr_avec_maladie = nbr_avec_maladie, 
+         esperance_avec_maladie = esperance_avec_maladie , esperance_sans_maladie = esperance_sans_maladie))
 }
 
 
@@ -148,6 +160,11 @@ print(testblanc)
 
 #Comme attendu la somme des années de vie est en faveur de la situation sans maladie
 #Dans ce cas la on a en effet une population qui est plus longtemps importante
+
+#Pour les mêmes raisons Nous avons beaucoup d'individus qui n'ont jamais vu le jour dans le cas d'une maladie
+
+#voici les résultats sur l'espérance de vie telle que nous l'avons simuler (on suppose que chaque individu vit aussi longtemps) :
+#espérance de vie avec maladie < espérance de vie sans maladie
 
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
 testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
