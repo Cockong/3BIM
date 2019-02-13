@@ -4,7 +4,6 @@ library(deSolve)
 
 rm(list=ls()) #reinitialiser variables
 
-
 Eq3 = function(t,x,parameters) #modèle complexe
 {
   with(as.list(c(parameters,x)),{
@@ -18,13 +17,16 @@ Eq3 = function(t,x,parameters) #modèle complexe
 
 
 
-simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemps)
+
+
+simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemps,
+                                 ploting = TRUE, ylim=c(0,max(parameters['N'],parameters['k'])))
 {
   #simulation sans infectés initiaux
   
   time=seq(0,maxtime,pasdetemps)
   solm=lsoda(func=Eq3,y=inisansmaladie,times=time,parms = parameters) #resoud
-  morts_sans_maladie=solm[length(solm[,5]),5] #5eme colonne est celle des morts
+  morts_sans_maladie=solm[length(solm[,"D"]),"D"] #5eme colonne est celle des morts
   
   
   
@@ -38,71 +40,78 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
   fin_epidemie=NA
   for (j in 1:maxtime)
   {
-    if (sol[j,3]<1) #moins d1 infecté => maladie éteinte
+    if (sol[j,"I"]<1) #moins d1 infecté => maladie éteinte
     {
-      morts_pendant_maladie=sol[j,5]
+      morts_pendant_maladie=sol[j,"D"]
       fin_epidemie=j #indice du temps à laquelle l'épidémie s'éteint
       epidemie="eteinte"
       break
     }
   }
   
-
+  
   
   if (epidemie !="endémique")
   {
     
     
     #On relance une simulation pour continuer l'évolution après l'épidémie
-    S=as.numeric(sol[fin_epidemie,2])
-    I=0                               #round(as.numeric(sol[fin_epidemie,2]))
-    R=as.numeric(sol[fin_epidemie,4])
-    D=as.numeric(sol[fin_epidemie,5])
+    S=as.numeric(sol[fin_epidemie,"S"])
+    I=0                               #round(as.numeric(sol[fin_epidemie,"S"]))
+    R=as.numeric(sol[fin_epidemie,"R"])
+    D=as.numeric(sol[fin_epidemie,"D"])
     continuer=c(S=S,I=I,R=R,D=D)
     time2=seq(0,maxtime-time[fin_epidemie],pasdetemps) # temps moins important
     
     sol2=lsoda(func=Eq3,y=continuer,times=time2,parms = parameters) #resoud
     
-    morts_avec_maladie=sol2[length(sol2[,5]),5]
+    morts_avec_maladie=sol2[length(sol2[,"D"]),"D"]
     
     #On combine les résultats pendant et après l'épidémie
-    smaladie=c(sol[1:fin_epidemie-1,2],sol2[,2]) #on tronque pour ne pas compter 2 fois le jour final de l'épidémie
-    imaladie=c(sol[1:fin_epidemie-1,3],sol2[,3])
-    rmaladie=c(sol[1:fin_epidemie-1,4],sol2[,4])
-    dmaladie=c(sol[1:fin_epidemie-1,5],sol2[,5])
+    smaladie=c(sol[1:fin_epidemie-1,"S"],sol2[,"S"]) #on tronque pour ne pas compter 2 fois le jour final de l'épidémie
+    imaladie=c(sol[1:fin_epidemie-1,"I"],sol2[,"I"])
+    rmaladie=c(sol[1:fin_epidemie-1,"R"],sol2[,"R"])
+    dmaladie=c(sol[1:fin_epidemie-1,"D"],sol2[,"D"])
   }
   else
   {
     #On récupère les données épidémiologiques à la fin de l'épidémie
-    smaladie=sol[,2]
-    imaladie=sol[,3]
-    rmaladie=sol[,4]
-    dmaladie=sol[,5]
-    morts_avec_maladie=sol[length(sol[,5]),5]
+    smaladie=sol[,"S"]
+    imaladie=sol[,"I"]
+    rmaladie=sol[,"R"]
+    dmaladie=sol[,"D"]
+    morts_avec_maladie=sol[length(sol[,"D"]),"D"]
     morts_pendant_maladie=morts_avec_maladie
   }
   
   #affichage des courbes
-  par(mfrow=c(2,1)) # 2 fig
-  
-  plot(x=time,y=smaladie,xlab="Temps",ylab="Population",type="l",ylim=c(0,900),col="green",main = "Graphique avec maladie")
-  points(x = time,imaladie,col="red",type="l")
-  points(x = time,rmaladie,col="blue",type="l")
-  points(x = time,dmaladie,col="black",type="l")
-  
-  
-  plot(x=time,y=solm[,2],xlab="Temps",ylab="Population",type="l",ylim=c(0,900),col="green",main = "Graphique sans maladie")
-  points(x = time,solm[,3],col="red",type="l")
-  points(x = time,solm[,4],col="blue",type="l")
-  points(x = time,solm[,5],col="black",type="l")
+  #par(mfrow=c(2,1)) # 2 fig
+  if (ploting)
+  {
+    plot(x=time,y=smaladie,xlab="Temps",ylab="Population",type="l",ylim=ylim,col="green",main = "Graphique avec maladie")
+    points(x = time,imaladie,col="red",type="l")
+    points(x = time,rmaladie,col="blue",type="l")
+    points(x = time,dmaladie,col="black",type="l")
+    legend("topright", legend=c("S","I","R","D","k"), col=c("green","red","blue","black","brown"),lty=1)
+    abline(h=parameters['k'],col="brown")
+    
+    plot(x=time,y=solm[,"S"],xlab="Temps",ylab="Population",type="l",ylim=ylim,col="green",main = "Graphique sans maladie")
+    points(x = time,solm[,"I"],col="red",type="l")
+    points(x = time,solm[,"R"],col="blue",type="l")
+    points(x = time,solm[,"D"],col="black",type="l")
+    legend("topright", legend=c("S","I","R","D","k"), col=c("green","red","blue","black","brown"),lty=1)
+    abline(h=parameters['k'],col="brown")
+    
+  }
+
   
   # résultat intéresant : le nombre d'individus ayant vécus
-  nbr_sans_maladie = sum(solm[length(sol[,5]),2:5])  
+  nbr_sans_maladie = sum(solm[length(sol[,"D"]),2:5])  
   nbr_avec_maladie = sum(smaladie[length(smaladie)],imaladie[length(imaladie)],rmaladie[length(rmaladie)],dmaladie[length(dmaladie)])
   
   
   # autre résultat intéresant : la somme des "années" de vies de tous les individus
-  années_de_vie_sans_maladie=( sum(solm[,2])+sum(solm[,3])+sum(solm[,4]) ) 
+  années_de_vie_sans_maladie=( sum(solm[,"S"])+sum(solm[,"I"])+sum(solm[,"R"]) ) 
   années_de_vie_avec_maladie=( sum(smaladie)+sum(imaladie)+sum(rmaladie) ) 
   
   #simulation de l'espérance de vie : temps de vie total / nombre dindividus ayant vécu
@@ -119,8 +128,9 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
          esperance_avec_maladie = esperance_avec_maladie,
          esperance_sans_maladie = esperance_sans_maladie,
          nbr_avec_maladie = nbr_avec_maladie,
-         nbr_sans_maladie = nbr_sans_maladie ))
+         nbr_sans_maladie = nbr_sans_maladie))
 }
+
 
 
 #Données
@@ -138,7 +148,7 @@ parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=the
 ini=c(S=N-I,I=I,R=0,D=0)
 inisansmaladie=c(S=N,I=0,R=0,D=0)
 maxtime=3000
-pasdetemps=1
+pasdetemps=0.1
 
 
 
@@ -170,6 +180,8 @@ print(testblanc)
 #voici les résultats sur l'espérance de vie telle que nous l'avons simuler (on suppose que chaque individu vit aussi longtemps) :
 # generalement espérance de vie avec maladie < espérance de vie sans maladie 
 #V ATTENTION CE RESULTAT VARIE EN FONCTION DES TESTS notemment quand mortalité maladie<< taux de recouvrement et que maladie non endémique
+#D'après résultat taux de natalité trop élevé 
+par(mfrow=c(3,2))
 
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
 testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
@@ -187,3 +199,14 @@ parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=the
 testkinf=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
                            maxtime=maxtime,pasdetemps=pasdetemps)
 print(testkinf)
+
+
+
+
+
+
+
+
+
+
+
