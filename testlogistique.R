@@ -92,14 +92,16 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
     points(x = time,imaladie,col="red",type="l")
     points(x = time,rmaladie,col="blue",type="l")
     points(x = time,dmaladie,col="black",type="l")
-    legend("topright", legend=c("S","I","R","D","k"), col=c("green","red","blue","black","brown"),lty=1)
+    points(x = time,smaladie+imaladie+rmaladie,col="purple",type="l")
+    legend("topright", legend=c("S","I","R","D","k","N"), col=c("green","red","blue","black","brown","purple"),lty=1)
     abline(h=parameters['k'],col="brown")
     
     plot(x=time,y=solm[,"S"],xlab="Temps",ylab="Population",type="l",ylim=ylim,col="green",main = "Graphique sans maladie")
     points(x = time,solm[,"I"],col="red",type="l")
     points(x = time,solm[,"R"],col="blue",type="l")
     points(x = time,solm[,"D"],col="black",type="l")
-    legend("topright", legend=c("S","I","R","D","k"), col=c("green","red","blue","black","brown"),lty=1)
+    points(x = time,smaladie+imaladie+rmaladie,col="purple",type="l")
+    legend("topright", legend=c("S","I","R","D","k","Nmaladie"), col=c("green","red","blue","black","brown","purple"),lty=1)
     abline(h=parameters['k'],col="brown")
     
   }
@@ -181,7 +183,7 @@ print(testblanc)
 # generalement espérance de vie avec maladie < espérance de vie sans maladie 
 #V ATTENTION CE RESULTAT VARIE EN FONCTION DES TESTS notemment quand mortalité maladie<< taux de recouvrement et que maladie non endémique
 #D'après résultat taux de natalité trop élevé 
-par(mfrow=c(3,2))
+par(mfrow=c(2,1))
 
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
 testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
@@ -214,7 +216,7 @@ print(testkinf)
 #Données courbe k=N/2 parfaite
 
 beta=0.00225 #infectiosité
-gamma=0.04 #mortalité
+gamma=0.045 #mortalité
 mu=0.05 #recouvrement
 N=300 #pop initiale
 I=1 #infecté initiale
