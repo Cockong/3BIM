@@ -133,7 +133,7 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
 
 
 
-#Données
+#Données espérance positive
 
 beta=0.00225 #infectiosité
 gamma=0.0004 #mortalité
@@ -147,7 +147,7 @@ k=800 #capacité limite
 parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
 ini=c(S=N-I,I=I,R=0,D=0)
 inisansmaladie=c(S=N,I=0,R=0,D=0)
-maxtime=3000
+maxtime=4000
 pasdetemps=0.1
 
 
@@ -203,6 +203,30 @@ print(testkinf)
 
 
 
+
+
+
+
+
+
+
+
+#Données courbe k=N/2 parfaite
+
+beta=0.00225 #infectiosité
+gamma=0.04 #mortalité
+mu=0.05 #recouvrement
+N=300 #pop initiale
+I=1 #infecté initiale
+lambda=0.001 #morts naturelles
+alpha=0.002 #naissances naturelles
+theta=alpha-lambda #pression démographique
+k=800 #capacité limite
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
+ini=c(S=N-I,I=I,R=0,D=0)
+inisansmaladie=c(S=N,I=0,R=0,D=0)
+maxtime=4000
+pasdetemps=0.1
 
 
 
