@@ -75,5 +75,8 @@ plt.plot(time,np.array(POP)[:,1],label="ados")
 plt.plot(time,np.array(POP)[:,2],label="adultes")
 plt.plot(time,np.array(POP)[:,3],label="vieux")
 
+#+plt.plot(time,np.array(POP)[:,3],label="morts") ou sont les morts ?
+
+
 plt.plot(time,POP_tot,'r--',label="population totale")
 plt.legend()
