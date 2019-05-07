@@ -236,3 +236,44 @@ pasdetemps=0.1
 
 
 
+#Test h1n1 :
+  
+beta=0.001589 #infectiosité
+mu=0.001096 #recouvrement
+gamma=mu*0.003 #mortalité
+
+#TEST ELAN
+
+N=1000 #pop initiale
+I=1 #infecté initiale
+lambda=0.0001369 #morts naturelles
+alpha =0.0008219 #naissances naturelles
+theta=alpha-lambda #pression démographique
+k=800 #capacité limite
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k)
+ini=c(S=N-I,I=I,R=0,D=0)
+inisansmaladie=c(S=N,I=0,R=0,D=0)
+maxtime=8000
+pasdetemps=0.1
+
+par(mfrow=c(2,1))
+
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
+testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
+                               maxtime=maxtime,pasdetemps=pasdetemps)
+print(testksup)
+
+
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N) #capacité limite = Pop départ
+testkegal=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
+                                maxtime=maxtime,pasdetemps=pasdetemps)
+print(testkegal)
+
+
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N/2) #capacité limite < que  Pop départ
+testkinf=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
+                               maxtime=maxtime,pasdetemps=pasdetemps)
+print(testkinf)
+
+
+
