@@ -7,10 +7,10 @@ rm(list=ls()) #reinitialiser variables
 Eq3 = function(t,x,parameters) #modèle complexe
 {
   with(as.list(c(parameters,x)),{
-    dS = - beta*S*I  + alpha*(S+I+R) -lambda*S - theta*(S+I+R)*S/k + proies_necessaires*probabilite_rencontre*S*P
-    dI =   beta*S*I - gamma*I - mu*I -lambda*I - theta*(S+I+R)*I/k + proies_necessaires*probabilite_rencontre*I*P
-    dR =   mu*I - lambda*R - theta*(S+I+R)*R/k + proies_necessaires*probabilite_rencontre*R*P
-    dD =   gamma*I + lambda*(R+I+S) + theta*(S+I+R)^2/k
+    dS = - beta*S*I -lambda*S  + proies_necessaires*probabilite_rencontre*S*P
+    dI =   beta*S*I - gamma*I - mu*I -lambda*I  + proies_necessaires*probabilite_rencontre*I*P
+    dR =   mu*I - lambda*R  + proies_necessaires*probabilite_rencontre*R*P
+    dD =   gamma*I + lambda*(R+I+S) 
     dP =   sigma*P*(1-P/kp )  - probabilite_rencontre*(S+I+R)*P #on estime quune rencontre = 1 mort
     list(c(dS,dI,dR,dD,dP))
   })
@@ -21,7 +21,7 @@ Eq3 = function(t,x,parameters) #modèle complexe
 
 
 simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemps,
-                                 ploting = TRUE, ylim=10*c(0,max(parameters['N'],parameters['k'])))
+                                 ploting = TRUE)
 {
   #simulation sans infectés initiaux
   
@@ -91,28 +91,26 @@ simulation_logistique = function(ini,inisansmaladie,parameters,maxtime,pasdetemp
   }
   
   #affichage des courbes
-  #par(mfrow=c(2,1)) # 2 fig
   if (ploting)
   {
+    par(mfrow=c(3,1)) # 3 fig
+    ylim=c(0,max(smaladie,imaladie,rmaladie,dmaladie))
     plot(x=time,y=smaladie,xlab="Temps",ylab="Population",type="l",ylim=ylim,col="green",main = "Graphique avec maladie")
     points(x = time,imaladie,col="red",type="l")
     points(x = time,rmaladie,col="blue",type="l")
     points(x = time,dmaladie,col="black",type="l")
     points(x = time,smaladie+imaladie+rmaladie,col="purple",type="l")
     legend("topright", legend=c("S","I","R","D","k","N"), col=c("green","red","blue","black","brown","purple"),lty=1)
-    abline(h=parameters['k'],col="brown")
-    
+
     plot(x=time,y=solm[,"S"],xlab="Temps",ylab="Population",type="l",ylim=ylim,col="green",main = "Graphique sans maladie")
     points(x = time,solm[,"I"],col="red",type="l")
     points(x = time,solm[,"R"],col="blue",type="l")
     points(x = time,solm[,"D"],col="black",type="l")
     points(x = time,smaladie+imaladie+rmaladie,col="purple",type="l")
     legend("topright", legend=c("S","I","R","D","k","Nmaladie"), col=c("green","red","blue","black","brown","purple"),lty=1)
-    abline(h=parameters['k'],col="brown")
 
     
-        
-    plot(x=time,y=pmaladie,xlab="Temps",ylab="Population",type="l",ylim=c(0,3000),col="green",main = "Comparaison Population de proies")
+    plot(x=time,y=pmaladie,xlab="Temps",ylab="Population",type="l",ylim=c(0,max(pmaladie,solm[,"P"])),col="green",main = "Comparaison Population de proies")
     points(x = time,solm[,"P"],col="red",type="l")
     legend("topright", legend=c("Pmaladie","Psansmaladie"), col=c("green","red"),lty=1)
     abline(h=parameters['kp'],col="brown")
@@ -154,23 +152,19 @@ mu=0.095 #recouvrement
 N=300 #pop initiale
 I=1 #infecté initiale
 lambda=0.001 #morts naturelles
-alpha=0.002 #naissances naturelles
-theta=alpha-lambda #pression démographique
-k=800 #capacité limite
 
 #paramètre des proies
 proies_necessaires =4
 probabilite_rencontre=10^-6
 M=N*4 #population initiale proie
-kp=N*12 #capacité limite proie
+kp=M*2 #capacité limite proie
 sigma= 0.002 #taux d'accroissement naturelle des proies
 
 
-parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=k,
-             proies_necessaires =proies_necessaires,probabilite_rencontre=probabilite_rencontre,kp=kp,sigma=sigma)
+parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda, proies_necessaires =proies_necessaires,probabilite_rencontre=probabilite_rencontre,kp=kp,sigma=sigma)
 ini=c(S=N-I,I=I,R=0,D=0,P=M)
 inisansmaladie=c(S=N,I=0,R=0,D=0,P=M)
-maxtime=2000
+maxtime=4000
 pasdetemps=0.1
 
 
@@ -205,24 +199,12 @@ print(testblanc)
 # generalement espérance de vie avec maladie < espérance de vie sans maladie 
 #V ATTENTION CE RESULTAT VARIE EN FONCTION DES TESTS notemment quand mortalité maladie<< taux de recouvrement et que maladie non endémique
 #D'après résultat taux de natalité trop élevé 
-par(mfrow=c(2,2))
 
-parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N*2) #capacité limite > Pop départ
 testksup=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
                                maxtime=maxtime,pasdetemps=pasdetemps)
 print(testksup)
 
 
-parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N) #capacité limite = Pop départ
-testkegal=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
-                                maxtime=maxtime,pasdetemps=pasdetemps)
-print(testkegal)
-
-
-parameters=c(beta=beta,gamma=gamma,N=N,mu=mu,lambda=lambda,alpha=alpha,theta=theta,k=N/2) #capacité limite < que  Pop départ
-testkinf=simulation_logistique(ini=ini,inisansmaladie=inisansmaladie,parameters=parameters,
-                               maxtime=maxtime,pasdetemps=pasdetemps)
-print(testkinf)
 
 
 
